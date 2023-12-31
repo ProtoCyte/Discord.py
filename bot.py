@@ -1,8 +1,9 @@
 from discord.ext import commands
 import discord 
 import datetime
+from config import BOT_TOKEN
 
-BOT_TOKEN = "MTE5MDQzNDEyNTI0MTM4OTEwNg.GgwjUx.PFN5M1p7IUjjFoRv2soFTrD_ifzrnMc9GF6xoM"
+
 
 
 default_activity = discord.Activity(type = discord.ActivityType.listening, name = "your every move")
