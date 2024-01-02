@@ -2,7 +2,6 @@ from discord.ext import commands
 import discord 
 import datetime
 from config import BOT_TOKEN
-
 default_activity = discord.Activity(type = discord.ActivityType.listening, name = "your every move")
 
 bot = commands.Bot(command_prefix="!",activity = default_activity, status = discord.Status.idle ,intents = discord.Intents.all())
