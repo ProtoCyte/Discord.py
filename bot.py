@@ -12,6 +12,9 @@ default_activity = discord.Activity(type = discord.ActivityType.listening, name 
 
 bot = commands.Bot(command_prefix="!",activity = default_activity, status = discord.Status.idle ,intents = discord.Intents.all())
 openai.api_key =  OPENAI_PERSONAL_KEY
+messages = []
+messages.append({"role": "system", "content": "You are an assistant that is trying to help me defuse bombs in the game 'Keep Talking and Nobody Explodes'"})
+
 
 @bot.event
 async def on_ready():
@@ -143,14 +146,15 @@ async def listen(ctx):
 # Sends a message and returns a response from openai.
 # Note this action costs money
 async def sendtoGPT(text):
+    messages.append({"role": "user", "content": f"{text}"})
     response = openai.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages= [
-            {"role": "system", "content": "You are an assistant that is trying to help me defuse bombs in the game 'Keep Talking and Nobody Explodes'"},
-            {"role": "user", "content": f"{text}"},
-        ]
+        messages= messages,
+        
     )
-    return response.choices[0].message.content
+    reply = response.choices[0].message.content
+    messages.append({"role": "user", "content": reply})
+    return reply
         
 async def playtts(text):
     tts = gTTS(text= text, lang='en')
