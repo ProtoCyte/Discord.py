@@ -20,3 +20,9 @@ The bot is configured to play "Keep Talking and Nobody Explodes", but it can lik
 ![Example of command being called, and the response back](Example1.png)
 
 ![Another example of command being called](Example2.png)
+
+### Acknowledgements
+
+Many thanks to many tutorials I found online via Youtube, Stackexchange and ChatGPT. It saved me a lot of time of reading through the API one by one. Also, thanks to Greg Baugues for his genius 16 line OpenAI bot that showed me how to add persistence to the response. I'll include a link to it below:
+
+[Greg Baugues' 16 Line Chatbot](https://twitter.com/greggyb/status/1631121912679002112?lang=en)
