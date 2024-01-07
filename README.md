@@ -17,4 +17,6 @@ Then join a voice channel on discord of your choosing, and type `!joincall` in a
 The bot is configured to play "Keep Talking and Nobody Explodes", but it can likely also become a normal chatbot. Edit the code on line 16 that states `messages.append({"role": "system", "content": "You are an assistant that is trying to help me defuse bombs in the game 'Keep Talking and Nobody Explodes'"})` with any message after `"content"` with what you want the bot to know before you call `!listen` for the first time.
 
 ### Example of the bot working
-![Example of command being called, and the response back](https://imgur.com/a/NPaCOuP)
+![Example of command being called, and the response back](Example1.png)
+
+![Another example of command being called](Example2.png)
