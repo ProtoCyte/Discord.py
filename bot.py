@@ -2,14 +2,16 @@ from discord.ext import commands
 import discord 
 import asyncio
 import speech_recognition as sr
+import openai, io
+from gtts import gTTS
 from config import BOT_TOKEN
+from config import OPENAI_PERSONAL_KEY
 
 
 default_activity = discord.Activity(type = discord.ActivityType.listening, name = "your every move")
 
 bot = commands.Bot(command_prefix="!",activity = default_activity, status = discord.Status.idle ,intents = discord.Intents.all())
-recognizer = sr.Recognizer()
-transcribing = False
+openai.api_key =  OPENAI_PERSONAL_KEY
 
 @bot.event
 async def on_ready():
@@ -110,55 +112,52 @@ async def commandLogger(command_name = str, channel_name = str):
 # This is the big part, this command listens to the user and what they are saying,
 # it **should** be constant, but if it cannot be constant, it should be activated by a command, and 
 # only disabled when a command tells it to stop listening
-@bot.event
-async def on_voice_state_update(member, before, after):
-    global transcribing
-
-    if member == bot.user and after.channel is not None:
-        voice_channel = after.channel
-        transcribing = True
-        await bot.change_presence(activity=discord.Game(name="Transcribing"))
-
-        try:
-            # Run the transcription loop in a separate coroutine
-            await transcribe_loop(voice_channel)
-
-        except asyncio.CancelledError:
-            pass
-        
-async def transcribe_loop(channel):
-    global transcribing
-    while transcribing:
-        try:
-            with sr.Microphone() as source:
-                audio = recognizer.listen(source)  # Adjust timeout as needed
-                text = recognizer.recognize_google(audio)
-                print(f"Recognized: {text}")
-
-                # Do something with the recognized text (e.g., send it to a channel)
-                await channel.send(f"Live Transcription: {text}")
-
-        except sr.UnknownValueError:
-            print("Speech Recognition could not understand audio")
-        except sr.RequestError as e:
-            print(f"Could not request results from Google Web Speech API; {e}")
-        
 @bot.command()
-async def stoptranscription(ctx):
-    global transcribing
-    if transcribing:
-        transcribing = False
-        await ctx.send("stopped transcribing")    
-    else:
-        await ctx.send("not actively transcribing")
-@bot.command()
-async def continuetranscription(ctx):
-    global transcribing
-    if transcribing is False:
-        transcribing = True
-        await ctx.send("continuing transcribing")
-    else:
-        await ctx.send("not actively transcribing")
+async def listen(ctx):
+    if ctx.author.voice is None or ctx.author.voice.channel is None:
+        await ctx.send("You need to be in a voice channel to use this command.")
+        return
+    try:
+        await ctx.send("Listening for speech...")
+
+        recognizer = sr.Recognizer()
+        with sr.Microphone() as source:
+            audio = recognizer.listen(source, timeout=15)
+
+        text = recognizer.recognize_google(audio)
+        await ctx.send(f"Transcription: {text}")
+        gpt_response = await sendtoGPT(text)
+        await ctx.send(f"OpenAI response: {gpt_response}")
+        await playtts(gpt_response)
+        ctx.voice_client.play(discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source="speech.mp3"))
+        while ctx.voice_client.is_playing():
+            await asyncio.sleep(1)
+            
         
+    except sr.UnknownValueError:
+        await ctx.send("Sorry, I could not understand the speech.")
+
+    except sr.RequestError as e:
+        await ctx.send(f"Speech recognition request failed: {e}")
+
+# Sends a message and returns a response from openai.
+# Note this action costs money
+async def sendtoGPT(text):
+    response = openai.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages= [
+            {"role": "system", "content": "You are an assistant that is trying to help me defuse bombs in the game 'Keep Talking and Nobody Explodes'"},
+            {"role": "user", "content": f"{text}"},
+        ]
+    )
+    return response.choices[0].message.content
+        
+async def playtts(text):
+    tts = gTTS(text= text, lang='en')
+    tts.save("speech.mp3")
+    
+    
+    
+           
 
 bot.run(BOT_TOKEN)
